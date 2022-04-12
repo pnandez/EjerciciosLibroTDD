@@ -16,9 +16,9 @@ export class CsvFilter {
     const taxFieldsAreMutuallyExclusive =
       (ivaField.match(decimalRegex) || igicField.match(decimalRegex)) &&
       (this.isNullOrEmpty(ivaField) || this.isNullOrEmpty(igicField));
+    const identificationFieldsAreMutuallyExclusive = (this.isNullOrEmpty(cifField) || this.isNullOrEmpty(nifField));
     if (taxFieldsAreMutuallyExclusive) {
-      if ((!this.isNullOrEmpty(cifField) && this.isNullOrEmpty(nifField)) ||
-        (this.isNullOrEmpty(cifField) && !this.isNullOrEmpty(nifField))) {
+      if (identificationFieldsAreMutuallyExclusive) {
         result.push(lines[1]);
       }
     }
