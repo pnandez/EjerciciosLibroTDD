@@ -18,12 +18,9 @@ export class CsvFilter {
     result.push(lines[0]);
     const invoice = lines[1];
     const fields = invoice.split(',');
-    const taxField = Number.parseInt(fields[indexDictionary.ivaFieldIndex]);
-    const grossAmountField = Number.parseInt(fields[indexDictionary.grossAmount]);
-    const netAmountField = Number.parseInt(fields[indexDictionary.netAmount]);
     if (this.checkTaxFields(fields) &&
         this.checkIdentificationFields(fields) &&
-        (netAmountField === (grossAmountField - (grossAmountField*(taxField/100))))) {
+        this.checkNetAmount(fields)) {
       result.push(lines[1]);
     }
     return result;
@@ -48,11 +45,17 @@ export class CsvFilter {
       (!this.isNullOrEmpty(cifField) && this.isNullOrEmpty(nifField) ||
         (this.isNullOrEmpty(cifField) && !this.isNullOrEmpty(nifField)));
 
-    if (identificationFieldsAreMutuallyExclusive) return true;
-    return false;
+    return (identificationFieldsAreMutuallyExclusive);
   }
 
-  private isNullOrEmpty(valueToCheck:string): boolean {
+  private checkNetAmount(fields:string[]): boolean {
+    const taxField = Number.parseInt(fields[indexDictionary.ivaFieldIndex]);
+    const grossAmountField = Number.parseInt(fields[indexDictionary.grossAmount]);
+    const netAmountField = Number.parseInt(fields[indexDictionary.netAmount]);
+    return (netAmountField === (grossAmountField - (grossAmountField * (taxField / 100))));
+  }
+
+  private isNullOrEmpty(valueToCheck: string): boolean {
     return (valueToCheck === null || valueToCheck.length === 0);
   }
 }
