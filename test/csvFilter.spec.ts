@@ -35,7 +35,7 @@ const fileWithOneInvoiceLineHaving = (cif: string = 'B76430134', nif: string = e
  *    Un fichero con una sola factura donde CIF y NIF están rellenos, debería eliminar la línea
  *    Un fichero de una sola línea es incorrecto porque no tiene cabecera
  *    Si el número de factura se repite en varias líneas, se eliminan todas ellas (sin dejar ninguna).
- *    Una lista vacía o nula producirá una lista vacía de salida
+ *   // Una lista vacía o nula producirá una lista vacía de salida
  */
 describe('Csv Filter should', () => {
   let filter:CsvFilter;
@@ -47,9 +47,9 @@ describe('Csv Filter should', () => {
   it('check if header is missing', () => {
     const lines = fileWithOneInvoiceLineHaving(undefined, undefined, undefined, undefined, 'a correct line with irrelevant data');
     lines.shift();
-    const result = filter.apply(lines);
+    const result = () => filter.apply(lines);
 
-    expect(result).toEqual(lines);  
+    expect(result).toThrow(/Invalid/);
   });
 
   it('not filter correct lines', () => {

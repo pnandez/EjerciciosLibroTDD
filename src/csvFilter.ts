@@ -11,6 +11,9 @@ const indexDictionary = {
 
 export class CsvFilter {
   public apply(lines: string[]): string[] {
+    if (lines.length <= 1) {
+      throw Error('Invalid file');
+    }
     const result: string[] = [];
     result.push(lines[0]);
     const invoice = lines[1];
