@@ -3,24 +3,45 @@ import {CsvFilter} from '../src/csvFilter';
 const emptyField = '';
 const headerLine = 'Num_factura, Fecha, Bruto, Neto, IVA, IGIC, Concepto, CIF_cliente, NIF_cliente';
 const emptyDataFile = [headerLine];
-const fileWithOneInvoiceLineHaving = (cif: string = 'B76430134', nif: string = emptyField, ivaTax: string = '19', igicTax: string = emptyField, concept: string = 'irrelevant'): string[] => {
-  const invoiceId = '1';
-  const invoiceDate = '02/05/2019';
-  const grossAmount = '1000';
-  const netAmount = '810';
+const fileWithOneInvoiceLineHaving = (
+  args: {
+    invoiceId: string,
+    invoiceDate:string,
+    grossAmount: string,
+    netAmount: string,
+    ivaTax: string,
+    igicTax: string,
+    concept: string,
+    cif: string,
+    nif: string
+  }): string[] => {
   const formattedLine = [
-    invoiceId,
-    invoiceDate,
-    grossAmount,
-    netAmount,
-    ivaTax,
-    igicTax,
-    concept,
-    cif,
-    nif,
+    args.invoiceId,
+    args.invoiceDate,
+    args.grossAmount,
+    args.netAmount,
+    args.ivaTax,
+    args.igicTax,
+    args.concept,
+    args.cif,
+    args.nif,
   ].join(',');
   return [headerLine, formattedLine];
 };
+
+const defaultParamsForOneLineFile = {
+  invoiceId: '1',
+  invoiceDate: '02/05/2019',
+  grossAmount: '1000',
+  netAmount: '810',
+  ivaTax: '19',
+  igicTax: emptyField,
+  concept: 'irrelevant',
+  cif: 'B76430134',
+  nif: emptyField,
+};
+
+const defaultFileWithOneInvoiceLine = fileWithOneInvoiceLineHaving(defaultParamsForOneLineFile);
 
 /**
  * Tras analizarlo con los especialistas en el negocio las reglas son:
@@ -45,7 +66,7 @@ describe('Csv Filter should', () => {
   });
 
   it('check if header is missing', () => {
-    const lines = fileWithOneInvoiceLineHaving(undefined, undefined, undefined, undefined, 'a correct line with irrelevant data');
+    const lines = defaultFileWithOneInvoiceLine;
     lines.shift();
     const result = () => filter.apply(lines);
 
@@ -53,56 +74,72 @@ describe('Csv Filter should', () => {
   });
 
   it('not filter correct lines', () => {
-    const lines = fileWithOneInvoiceLineHaving(undefined, undefined, undefined, undefined, 'a correct line with irrelevant data');
+    const lines = fileWithOneInvoiceLineHaving({ ...defaultParamsForOneLineFile, concept: 'a correct line with irrelevant data'} );
     const result = filter.apply(lines);
 
     expect(result).toEqual(lines);
   });
 
   it('make tax fields mutually exclusive', () => {
-    const result = filter.apply(fileWithOneInvoiceLineHaving(undefined, undefined, '19', '8', undefined));
+    const result = filter.apply(fileWithOneInvoiceLineHaving(
+      { ...defaultParamsForOneLineFile, ivaTax: '19', igicTax: '8'} ));
 
     expect(result).toEqual(emptyDataFile);
   });
 
   it('there must be at least one tax field for the invoice', () => {
     const result = filter.apply(fileWithOneInvoiceLineHaving(
-      undefined,
-      undefined,
-      emptyField,
-      emptyField,
-    ));
+      {...defaultParamsForOneLineFile,
+        ivaTax: emptyField,
+        igicTax: emptyField}));
 
     expect(result).toEqual(emptyDataFile);
   });
 
   it('not accept non decimal tax fields', () => {
-    const result = filter.apply(fileWithOneInvoiceLineHaving(undefined, undefined, 'XYZ', emptyField));
+    const result = filter.apply(fileWithOneInvoiceLineHaving(
+      {...defaultParamsForOneLineFile,
+        ivaTax: 'XYZ',
+        igicTax: emptyField}));
 
     expect(result).toEqual(emptyDataFile);
   });
 
   it('not accept non decimal tax fields and they must be exclusive', () => {
-    const result = filter.apply(fileWithOneInvoiceLineHaving(undefined, undefined, 'XYZ', emptyField));
+    const result = filter.apply(fileWithOneInvoiceLineHaving({
+      ...defaultParamsForOneLineFile,
+      ivaTax: 'XYZ',
+      igicTax: '12',
+    }));
 
     expect(result).toEqual(emptyDataFile);
   });
 
   it('make cif and nif fields exclusive', () => {
-    const result = filter.apply(fileWithOneInvoiceLineHaving('12A', '12C', undefined, undefined));
+    const result = filter.apply(fileWithOneInvoiceLineHaving({
+      ...defaultParamsForOneLineFile,
+      nif: '12A',
+      cif: '12C'}));
 
     expect(result).toEqual(emptyDataFile);
   });
 
   it('there must be at least one id field for the invoice', () => {
     const result = filter.apply(fileWithOneInvoiceLineHaving(
-      emptyField,
-      emptyField,
-      undefined,
-      undefined,
-    ));
+      {
+        ...defaultParamsForOneLineFile,
+        cif: emptyField,
+        nif: emptyField,
+      }));
 
     expect(result).toEqual(emptyDataFile);
+  });
+
+  it('not accept not correct net amount', () => {
+    const result = filter.apply(fileWithOneInvoiceLineHaving({
+      ...defaultParamsForOneLineFile,
+      netAmount: '9'}));
+      expect(result).toBe(emptyDataFile);
   });
 });
 
