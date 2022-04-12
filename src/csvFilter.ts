@@ -16,11 +16,11 @@ export class CsvFilter {
     const taxFieldsAreMutuallyExclusive =
       (ivaField.match(decimalRegex) || igicField.match(decimalRegex)) &&
       (this.isNullOrEmpty(ivaField) || this.isNullOrEmpty(igicField));
-    const identificationFieldsAreMutuallyExclusive = (this.isNullOrEmpty(cifField) || this.isNullOrEmpty(nifField));
-    if (taxFieldsAreMutuallyExclusive) {
-      if (identificationFieldsAreMutuallyExclusive) {
-        result.push(lines[1]);
-      }
+    const identificationFieldsAreMutuallyExclusive =
+      (!this.isNullOrEmpty(cifField) && this.isNullOrEmpty(nifField) ||
+        (this.isNullOrEmpty(cifField) && !this.isNullOrEmpty(nifField)));
+    if (taxFieldsAreMutuallyExclusive && identificationFieldsAreMutuallyExclusive) {
+      result.push(lines[1]);
     }
     return result;
   }

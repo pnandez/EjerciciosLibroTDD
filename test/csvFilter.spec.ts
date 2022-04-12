@@ -86,7 +86,16 @@ describe('Csv Filter should', () => {
     expect(result).toEqual(emptyDataFile);
   });
 
+  it('there must be at least one id field for the invoice', () => {
+    const result = filter.apply(fileWithOneInvoiceLineHaving(
+      emptyField,
+      emptyField,
+      undefined,
+      undefined,
+    ));
 
+    expect(result).toEqual(emptyDataFile);
+  });
 });
 
 
