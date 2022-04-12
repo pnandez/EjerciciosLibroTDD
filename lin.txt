@@ -2,11 +2,13 @@
     "env": {
         "browser": true,
         "es2021": true,
-        "node": true,
+        "lint": "eslint ./src --ext .ts",
         "jest": true
     },
     "extends": [
-        "google"
+        "google",
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended"
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
@@ -17,14 +19,10 @@
         "@typescript-eslint"
     ],
     "rules": {
-        "require-jsdoc": 0,
+        "require-jsdoc" : 0,
         "indent": [
             "error",
             2
-        ],
-        "semi": [
-            "error",
-            "always"
         ],
         "linebreak-style": [
             "error",
@@ -32,18 +30,8 @@
         ],
         "quotes": [
             "error",
-            "single"
+            "double"
         ],
-        "max-len": [
-            "error",
-            {
-                "code": 100,
-                "ignoreUrls": true,
-                "ignoreComments": true,
-                "ignoreRegExpLiterals": true,
-                "ignoreStrings": true,
-                "ignoreTemplateLiterals": true
-            }
-        ]
+
     }
 }
