@@ -13,8 +13,8 @@ const fileWithOneInvoiceLineHaving = (
     igicTax: string,
     concept: string,
     cif: string,
-    nif: string
-  }): string[] => {
+    nif: string})
+    : string[] => {
   const formattedLine = [
     args.invoiceId,
     args.invoiceDate,
@@ -74,7 +74,7 @@ describe('Csv Filter should', () => {
   });
 
   it('not filter correct lines', () => {
-    const lines = fileWithOneInvoiceLineHaving({ ...defaultParamsForOneLineFile, concept: 'a correct line with irrelevant data'} );
+    const lines = fileWithOneInvoiceLineHaving({...defaultParamsForOneLineFile, concept: 'a correct line with irrelevant data'} );
     const result = filter.apply(lines);
 
     expect(result).toEqual(lines);
@@ -82,7 +82,7 @@ describe('Csv Filter should', () => {
 
   it('make tax fields mutually exclusive', () => {
     const result = filter.apply(fileWithOneInvoiceLineHaving(
-      { ...defaultParamsForOneLineFile, ivaTax: '19', igicTax: '8'} ));
+      {...defaultParamsForOneLineFile, ivaTax: '19', igicTax: '8'} ));
 
     expect(result).toEqual(emptyDataFile);
   });
@@ -139,7 +139,7 @@ describe('Csv Filter should', () => {
     const result = filter.apply(fileWithOneInvoiceLineHaving({
       ...defaultParamsForOneLineFile,
       netAmount: '9'}));
-      expect(result).toBe(emptyDataFile);
+    expect(result).toEqual(emptyDataFile);
   });
 });
 

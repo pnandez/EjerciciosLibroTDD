@@ -18,8 +18,12 @@ export class CsvFilter {
     result.push(lines[0]);
     const invoice = lines[1];
     const fields = invoice.split(',');
-
-    if (this.checkTaxFields(fields) && this.checkIdentificationFields(fields)) {
+    const taxField = Number.parseInt(fields[indexDictionary.ivaFieldIndex]);
+    const grossAmountField = Number.parseInt(fields[indexDictionary.grossAmount]);
+    const netAmountField = Number.parseInt(fields[indexDictionary.netAmount]);
+    if (this.checkTaxFields(fields) &&
+        this.checkIdentificationFields(fields) &&
+        (netAmountField === (grossAmountField - (grossAmountField*(taxField/100))))) {
       result.push(lines[1]);
     }
     return result;
