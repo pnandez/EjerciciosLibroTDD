@@ -44,6 +44,14 @@ describe('Csv Filter should', () => {
     filter = new CsvFilter();
   });
 
+  it('check if header is missing', () => {
+    const lines = fileWithOneInvoiceLineHaving(undefined, undefined, undefined, undefined, 'a correct line with irrelevant data');
+    lines.shift();
+    const result = filter.apply(lines);
+
+    expect(result).toEqual(lines);  
+  });
+
   it('not filter correct lines', () => {
     const lines = fileWithOneInvoiceLineHaving(undefined, undefined, undefined, undefined, 'a correct line with irrelevant data');
     const result = filter.apply(lines);
