@@ -14,29 +14,24 @@ export class CsvFilter {
     if (lines.length <= 1) {
       throw Error('Invalid file');
     }
-    // TODO: rename array
-    const noConflictsArray: string[] = [];
+
+    const checkedTaxIdentificationNetAmountFields: string[] = [];
     const usedIds = new Map<string, number[]>();
-    for (let i = 1; i < lines.length; i++) {
-      const invoice = lines[i];
-      const fields = invoice.split(',');
-      const id = fields[indexDictionary.invoiceId];
 
-      if (this.checkTaxFields(fields) &&
-        this.checkIdentificationFields(fields) &&
-        this.checkNetAmount(fields)) {
-        const existingEntry = usedIds.get(id);
-        if (existingEntry) {
-          existingEntry.push(i);
-        } else {
-          usedIds.set(id, [i]);
-        }
-        noConflictsArray.push(lines[i]);
-      }
-    }
+    this.checkForTaxNetAmountIdentificationConflict(lines, checkedTaxIdentificationNetAmountFields);
+    this.filterDuplicateBillingIds(lines, usedIds);
 
+    const result: string[] =
+      this.cleanDuplicatedBillingIDs(checkedTaxIdentificationNetAmountFields, usedIds);
+    result.unshift(lines[0]);
+    return result;
+  }
+
+  private cleanDuplicatedBillingIDs(
+    checkedTaxIdentificationNetAmountFields: string[],
+    usedIds: Map<string, number[]>) {
     let result: string[] = [];
-    result = noConflictsArray.filter((noConflictedLine) => {
+    result = checkedTaxIdentificationNetAmountFields.filter((noConflictedLine) => {
       const fields = noConflictedLine.split(',');
       const id = fields[indexDictionary.invoiceId];
       const existingEntryInMap = usedIds.get(id) ?? [];
@@ -44,8 +39,37 @@ export class CsvFilter {
         return noConflictedLine;
       }
     });
-    result.unshift(lines[0]);
+
     return result;
+  }
+
+  private filterDuplicateBillingIds(lines: string[], usedIds: Map<string, number[]>) {
+    for (let i = 1; i < lines.length; i++) {
+      const invoice = lines[i];
+      const fields = invoice.split(',');
+      const id = fields[indexDictionary.invoiceId];
+      const existingEntry = usedIds.get(id);
+      if (existingEntry) {
+        existingEntry.push(i);
+      } else {
+        usedIds.set(id, [i]);
+      }
+    }
+  }
+
+  private checkForTaxNetAmountIdentificationConflict(
+    lines: string[],
+    checkedTaxIdentificationNetAmountFields: string[]) {
+    for (let i = 1; i < lines.length; i++) {
+      const invoice = lines[i];
+      const fields = invoice.split(',');
+
+      if (this.checkTaxFields(fields) &&
+        this.checkIdentificationFields(fields) &&
+        this.checkNetAmount(fields)) {
+        checkedTaxIdentificationNetAmountFields.push(lines[i]);
+      }
+    }
   }
 
   private checkTaxFields(fields: string[]):boolean {
