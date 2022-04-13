@@ -49,12 +49,12 @@ const defaultFileWithOneInvoiceLine = fileWithOneInvoiceLineHaving(defaultParams
  *    El número de factura no puede estar repetido. Si lo estuviese eliminaríamos todas las líneas con repetición.
  *   // Los impuestos IVA e IGIC son excluyentes, sólo puede aplicarse uno de los dos. Si alguna línea tiene contenido en ambos campos debe quedarse fuera.
  *   // Los campos CIF y NIF son excluyentes, sólo se puede usar uno de ellos.
- *    El neto es el resultado de aplicar al bruto el correspondiente impuesto. Si algún neto no está bien calculado se queda fuera.
- *    Un fichero con una sola factura donde todo es correcto, debería producir como salida la misma línea
- *    Un fichero con una sola factura donde IVA e IGIC están rellenos, debería eliminar la línea
- *    Un fichero con una sola factura donde el neto está mal calculado, debería ser eliminada
- *    Un fichero con una sola factura donde CIF y NIF están rellenos, debería eliminar la línea
- *    Un fichero de una sola línea es incorrecto porque no tiene cabecera
+ *   // El neto es el resultado de aplicar al bruto el correspondiente impuesto. Si algún neto no está bien calculado se queda fuera.
+ *   // Un fichero con una sola factura donde todo es correcto, debería producir como salida la misma línea
+ *   // Un fichero con una sola factura donde IVA e IGIC están rellenos, debería eliminar la línea
+ *   // Un fichero con una sola factura donde el neto está mal calculado, debería ser eliminada
+ *   //  Un fichero con una sola factura donde CIF y NIF están rellenos, debería eliminar la línea
+ *   //Un fichero de una sola línea es incorrecto porque no tiene cabecera
  *    Si el número de factura se repite en varias líneas, se eliminan todas ellas (sin dejar ninguna).
  *   // Una lista vacía o nula producirá una lista vacía de salida
  */
@@ -139,6 +139,16 @@ describe('Csv Filter should', () => {
     const result = filter.apply(fileWithOneInvoiceLineHaving({
       ...defaultParamsForOneLineFile,
       netAmount: '9'}));
+    expect(result).toEqual(emptyDataFile);
+  });
+
+  it('not accept same id for bills', () => {
+    const lines = fileWithOneInvoiceLineHaving({...defaultParamsForOneLineFile});
+    const linesToAdd = fileWithOneInvoiceLineHaving({...defaultParamsForOneLineFile});
+    lines.push(linesToAdd[1]);
+
+    const result = filter.apply(lines);
+
     expect(result).toEqual(emptyDataFile);
   });
 });

@@ -14,15 +14,37 @@ export class CsvFilter {
     if (lines.length <= 1) {
       throw Error('Invalid file');
     }
-    const result: string[] = [];
-    result.push(lines[0]);
-    const invoice = lines[1];
-    const fields = invoice.split(',');
-    if (this.checkTaxFields(fields) &&
+    // TODO: rename array
+    const noConflictsArray: string[] = [];
+    const usedIds = new Map<string, number[]>();
+    for (let i = 1; i < lines.length; i++) {
+      const invoice = lines[i];
+      const fields = invoice.split(',');
+      const id = fields[indexDictionary.invoiceId];
+
+      if (this.checkTaxFields(fields) &&
         this.checkIdentificationFields(fields) &&
         this.checkNetAmount(fields)) {
-      result.push(lines[1]);
+        const existingEntry = usedIds.get(id);
+        if (existingEntry) {
+          existingEntry.push(i);
+        } else {
+          usedIds.set(id, [i]);
+        }
+        noConflictsArray.push(lines[i]);
+      }
     }
+
+    let result: string[] = [];
+    result = noConflictsArray.filter((noConflictedLine) => {
+      const fields = noConflictedLine.split(',');
+      const id = fields[indexDictionary.invoiceId];
+      const existingEntryInMap = usedIds.get(id) ?? [];
+      if (existingEntryInMap.length === 1) {
+        return noConflictedLine;
+      }
+    });
+    result.unshift(lines[0]);
     return result;
   }
 
