@@ -10,9 +10,15 @@ const indexDictionary = {
 };
 
 export class CsvFilter {
+  private headerLine = 'Num_factura, Fecha, Bruto, Neto, IVA, IGIC, Concepto, CIF_cliente, NIF_cliente';
+
   public apply(lines: string[]): string[] {
-    if (lines.length <= 1) {
+    if (lines.length < 1 || lines[0] !== this.headerLine) {
       throw Error('Invalid file');
+    }
+
+    if (lines.length === 1 && lines[0] === this.headerLine) {
+      return lines;
     }
 
     const checkedTaxIdentificationNetAmountFields: string[] = [];

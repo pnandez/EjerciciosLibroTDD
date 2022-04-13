@@ -43,8 +43,10 @@ const defaultParamsForOneLineFile = {
 
 const defaultFileWithOneInvoiceLine = fileWithOneInvoiceLineHaving(defaultParamsForOneLineFile);
 
+
 /**
  * Tras analizarlo con los especialistas en el negocio las reglas son:
+ *   * No es válido para una lista sin cabecera
  *   * Es válido que algunos campos estén vacíos (apareciendo dos comas seguidas o una coma final)
  *   * Los impuestos IVA e IGIC son excluyentes, sólo puede aplicarse uno de los dos. Si alguna línea tiene contenido en ambos campos debe quedarse fuera.
  *   * Los campos CIF y NIF son excluyentes, sólo se puede usar uno de ellos.
@@ -72,8 +74,15 @@ describe('Csv Filter should', () => {
     expect(result).toThrow(/Invalid/);
   });
 
+  it('check if list is empty', () => {
+    const lines = [headerLine];
+    const result = filter.apply(lines);
+
+    expect(result).toEqual(emptyDataFile);
+  });
+
   it('not filter correct lines', () => {
-    const lines = fileWithOneInvoiceLineHaving({...defaultParamsForOneLineFile, concept: 'a correct line with irrelevant data'} );
+    const lines = fileWithOneInvoiceLineHaving({...defaultParamsForOneLineFile, concept: 'a correct line with irrelevant data'});
     const result = filter.apply(lines);
 
     expect(result).toEqual(lines);
@@ -149,6 +158,28 @@ describe('Csv Filter should', () => {
     const result = filter.apply(lines);
 
     expect(result).toEqual(emptyDataFile);
+  });
+
+  it('accept all of the previous restrictions together', () => {
+    const expectedResult = [
+      headerLine,
+      fileWithOneInvoiceLineHaving({...defaultParamsForOneLineFile})[1],
+      fileWithOneInvoiceLineHaving({...defaultParamsForOneLineFile, invoiceId: '4', grossAmount: '1000', ivaTax: '10', netAmount: '900'})[1],
+    ];
+    const lines = [
+      headerLine,
+      fileWithOneInvoiceLineHaving({...defaultParamsForOneLineFile})[1],
+      fileWithOneInvoiceLineHaving({...defaultParamsForOneLineFile, invoiceId: '2', concept: 'a correct line with irrelevant data'})[1],
+      fileWithOneInvoiceLineHaving({...defaultParamsForOneLineFile, invoiceId: '2', concept: 'should fail because of same id as previous line'})[1],
+      fileWithOneInvoiceLineHaving({...defaultParamsForOneLineFile, invoiceId: '3', netAmount: '9', concept: 'should fail because of incorrect net amount'})[1],
+      fileWithOneInvoiceLineHaving({...defaultParamsForOneLineFile, invoiceId: '4', grossAmount: '1000', ivaTax: '10', netAmount: '900'})[1],
+      fileWithOneInvoiceLineHaving({...defaultParamsForOneLineFile, invoiceId: '5', nif: '123', concept: 'should fail  because of nif and cif together'})[1],
+      fileWithOneInvoiceLineHaving({...defaultParamsForOneLineFile, invoiceId: '6', concept: 'should fail because of both tax fields filleds', igicTax: '5'})[1],
+    ];
+
+    const result = filter.apply(lines);
+
+    expect(result).toEqual(expectedResult);
   });
 });
 
